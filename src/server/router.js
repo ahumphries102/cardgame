@@ -1,5 +1,5 @@
 const express = require('express')
-const Blog = require('./schema')
+const Kitten = require('./schema')
 const router = express.Router()
 
 router.get('/hotdog', (req, res)=>{
@@ -11,13 +11,13 @@ router.get('/hotdog2', (req, res)=>{
 })
 
 router.post('/hotdog3', (req, res)=>{
-    const blarg = new Blog({title:"dougie"})
-    console.log(blarg)
-    blarg.save((err, blarg) => {
-        if(err) console.error(err)
-        console.log('saved')
-    })
-    res.send(req.body)
+    // const blarg = new Kitten({name:req.body})
+    console.log(req.body)
+    // blarg.save((err, blarg) => {
+    //     if(err) console.error(err)
+    //     console.log('saved')
+    // })
+    res.send({dog: req.body})
 })
 
 module.exports = router

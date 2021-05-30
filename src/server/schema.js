@@ -1,19 +1,9 @@
 const mongoose = require('mongoose')
-const { Schema } = mongoose;
 
-const blogSchema = new Schema({
-  title:  String, // String is shorthand for {type: String}
-  author: String,
-  body:   String,
-  comments: [{ body: String, date: Date }],
-  date: { type: Date, default: Date.now },
-  hidden: Boolean,
-  meta: {
-    votes: Number,
-    favs:  Number
-  }
-});
+const kittySchema = new mongoose.Schema({
+    name: String
+})
 
-const Blog = mongoose.model('Blog', blogSchema, 'playerInfo')
+const Kitten = mongoose.model('Kitten', kittySchema, 'playerInfo')
 
-module.exports = Blog
+module.exports = Kitten

@@ -21,10 +21,12 @@ export default {
     onMounted( async () => {
       let dog = await fetch('/hotdog2',{
         headers:{
-          'content-type': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         }
       })
       let data = await dog.json()
+      console.log(data)
       state.taco = data.username
     })
     async function postText (){
@@ -33,8 +35,8 @@ export default {
           method: "POST",
           body: JSON.stringify({dog:state.test}),
           headers:{
-            'content-type':'application/json',
-            'accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
       })
       let data = (await dog.json()).dog

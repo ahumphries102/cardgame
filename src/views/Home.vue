@@ -6,20 +6,24 @@
 
 <script>
 import { onMounted, reactive } from '@vue/composition-api'
+import { io } from 'socket.io-client'
 export default {
   name: 'home',
   setup(props) {
     const state = reactive({
-      taco: 'taco'
+      taco: 'taco',
+      users: []
     })
+    
     onMounted( async () => {
-      let dog = await fetch('/hotdog',{
-        headers:{
-          'content-type': 'application/json'
-        }
-      })
-      let data = await dog.json()
-      state.taco = data.username
+      io()
+      // let dog = await fetch('/hotdog',{
+      //   headers:{
+      //     'content-type': 'application/json'
+      //   }
+      // })
+      // let data = await dog.json()
+      // state.taco = data.username
     })
     return { state }
   }

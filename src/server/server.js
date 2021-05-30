@@ -1,26 +1,38 @@
 const express = require('express');
 const app = express();
-const PORT = 3000;
-const router = require('./router')
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require("socket.io");
+const io = new Server(server);
+
+const port = 3000
+const routes = require('./router')
+
 const mongoose = require('mongoose')
 require('dotenv').config()
-const uri = process.env.SERVER
-app.use(express.json());
-app.use('/', router)
-mongoose.connect(uri, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex:true
-},
-() => console.log('Database connected'))
+
+
+mongoose.connect(process.env.SERVER, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+
 const db = mongoose.connection
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-  // we're connected!
-});
+db.on('error', console.error.bind('error no db connect'))
+db.once('open', () => {
+  console.log('we connected to the db')
+})
 
 
-app.listen(PORT, function(err){
-    if (err) console.log(err);
-    console.log("Server listening on PORT", PORT);
-});
+io.on('connection', (socket) => {
+  console.log('a user connected')
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+  });
+})
+
+server.listen(port, () => {
+  console.log('Tadah You Connected!')
+})
+
+

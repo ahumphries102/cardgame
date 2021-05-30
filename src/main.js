@@ -3,7 +3,6 @@ import App from './App.vue'
 import router from './router'
 import vuetify from './plugins/vuetify'
 import CompositionApi from '@vue/composition-api'
-
 Vue.use(CompositionApi)
 Vue.config.productionTip = false
 
