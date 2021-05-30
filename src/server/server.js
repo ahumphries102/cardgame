@@ -8,6 +8,8 @@ const io = new Server(server);
 const port = 3000
 const routes = require('./router')
 
+app.use('/', routes)
+
 const mongoose = require('mongoose')
 require('dotenv').config()
 
@@ -25,12 +27,16 @@ db.once('open', () => {
 
 
 io.on('connection', (socket) => {
-  console.log('a user connected')
+  io.emit('connecteded', 'a user connected!')
   socket.on('chat message', (msg) => {
     console.log('message: ' + msg);
   });
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
+  socket.on('chat message', (msg) => {
+    io.emit('chat message', msg);
+  });
+  socket.on('disconnect', (msg) => {
+    console.log('user logged out', msg);
+    io.emit('userLeft', 'A user has disconnected')
   });
 })
 
