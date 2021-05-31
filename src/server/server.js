@@ -8,11 +8,11 @@ const io = new Server(server);
 const port = 3000
 const routes = require('./router')
 
+app.use(express.json())
 app.use('/', routes)
 
 const mongoose = require('mongoose')
 require('dotenv').config()
-
 
 mongoose.connect(process.env.SERVER, {
   useNewUrlParser: true,
@@ -27,10 +27,12 @@ db.once('open', () => {
 
 
 io.on('connection', (socket) => {
-  io.emit('connecteded', 'a user connected!')
-  socket.on('chat message', (msg) => {
-    console.log('message: ' + msg);
-  });
+  io.emit('userConnected', 'A user has connected')
+  socket.on('userConnected1', (msg) => {
+    console.log(socket.id)
+    io.emit('userConnected1', msg)
+  })
+
   socket.on('chat message', (msg) => {
     io.emit('chat message', msg);
   });
@@ -38,10 +40,9 @@ io.on('connection', (socket) => {
     console.log('user logged out', msg);
     io.emit('userLeft', 'A user has disconnected')
   });
+  
 })
 
 server.listen(port, () => {
   console.log('Tadah You Connected!')
 })
-
-

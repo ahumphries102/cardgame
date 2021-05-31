@@ -2,7 +2,8 @@ const express = require('express')
 const Kitten = require('./schema')
 const router = express.Router()
 
-router.get('/hotdog', (req, res)=>{
+router.post('/hotdog', (req, res)=>{
+    console.log(req.body)
     res.send({username:'dug'})
 })
 

@@ -3,7 +3,7 @@
     <v-card>
       <v-card-text>
         <v-list>
-          <v-list-item v-for="(message, ind) in state.messages" :key="ind">
+          <v-list-item v-for="(message, ind) in state.messages.message" :key="ind">
             {{ message }}
           </v-list-item>
         </v-list>
@@ -27,36 +27,37 @@ export default {
   setup(props) {
     const socket = io();
     const state = reactive({
-      messages:[],
-      taco: "taco",
+      messages:{
+        message: []
+      },
+      messageNumber: 0,
+      randomNum: Math.floor(Math.random() * 3),
       userInput: "",
-      users: [],
+      users: ['Tom', 'Mary', 'Ashley'],
     });
 
     onMounted(async () => {
-      socket.on('connecteded', (msg) => {
-        state.messages.push(msg)
-      })
-      // let dog = await fetch('/hotdog',{
-      //   headers:{
-      //     'content-type': 'application/json'
-      //   }
-      // })
-      // let data = await dog.json()
-      // state.taco = data.username
-    });
 
+      socket.once('userConnected', () => {
+        socket.emit('userConnected1', state.users[state.randomNum] + ' has joined the room.')
+      })
+    });
     function sendMessage() {
       socket.emit("chat message", state.userInput);
       state.userInput = ''
     }
 
+    socket.on('userConnected1', (msg) => {
+      state.messages.message.push(msg)
+    })
+
     socket.on("chat message", (msg) => {
-      state.messages.push(msg)
+      state.messageNumber += 1
+      state.messages.message.push(msg)
       window.scrollTo(0, document.body.scrollHeight);
     });
     socket.on('userLeft', (msg) => {
-      state.messages.push(msg)
+      state.messages.message.push(state.users[state.randomNum] + ' has left the room.')
     })
     return { sendMessage, state };
   },
