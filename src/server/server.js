@@ -25,23 +25,43 @@ db.once('open', () => {
   console.log('we connected to the db')
 })
 
-
-io.on('connection', (socket) => {
-  io.emit('userConnected', 'A user has connected')
-  socket.on('userConnected1', (msg) => {
-    console.log(socket.id)
-    io.emit('userConnected1', msg)
+let players = {
+  player1:'',
+  player2:''
+}
+io.on('connection', async (socket) => {
+  socket.on('userConnected', (name) => {
+    if(!players.player1.length){
+      players.player1 = name
+    } else {
+      players.player2 = name
+    }
+    socket.broadcast.emit('displayWhoEnteredRoom', name + ' just connected')
+    io.emit('whichPlayer', players)
+    console.log(players)
   })
 
-  socket.on('chat message', (msg) => {
-    io.emit('chat message', msg);
-  });
-  socket.on('disconnect', (msg) => {
-    console.log('user logged out', msg);
-    io.emit('userLeft', 'A user has disconnected')
-  });
-  
+  socket.on('chat message', (msg, name) => {
+    // emits to everyone but the user that sent the message
+    socket.broadcast.emit('receiveMessage', name + ': ' + msg)
+  })
+
+  socket.on('leaveRoom', () => {
+    socket.leave('roomA')
+    io.emit('leftRoom', 'User has left the room')
+  })
+
+  socket.on('disconnect', () => {
+    for (const [key, value] of Object.entries(players)){
+      console.log(value, socket.id)
+      if (value === socket.id){
+        players[key] = ''
+      }
+      console.log(players)
+    }
+  })
 })
+
 
 server.listen(port, () => {
   console.log('Tadah You Connected!')
