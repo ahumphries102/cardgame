@@ -3,10 +3,10 @@
     <v-card>
       <v-card-text>
         <div
-          :style="{ color: 'white', width: '50px', height: '50px', background: state.playerInfo.player1 === state.playerName? 'red' : 'purple' }"
+          :style="{ color: 'white', width: '50px', height: '50px', background: state.playerInfo.player1.id === state.playerName? 'red' : 'purple' }"
         >Player 1</div>
         <div
-          :style="{ color: 'white', width: '50px', height: '50px', background: state.playerInfo.player2 === state.playerName? 'blue' : 'purple' }"
+          :style="{ color: 'white', width: '50px', height: '50px', background: state.playerInfo.player2.id === state.playerName? 'blue' : 'purple' }"
         >Player 2</div>
       </v-card-text>
       <v-card-text>
@@ -46,29 +46,28 @@ export default {
       messageNumber: 0,
       playerInfo:{},
       playerName:'',
-      randomNum: Math.floor(Math.random() * 3),
+      randomNum: Math.floor(Math.random() * 8),
       userInput: "",
-      users: ["Tom", "Mary", "Ashley"],
+      users: ["Tom", "Mary", "Ashley", "John", "Toby", "Helga", "Vicki", "Pete"],
     });
 
     onMounted(async () => {
       socket.on("connect", () => {
         state.playerName = socket.id
         state.messages.message.push("You connected " + socket.id);
-        socket.emit("userConnected", socket.id);
+        socket.emit("userConnected", state.users[state.randomNum]);
         socket.on("displayWhoEnteredRoom", (msg) => {
           state.messages.message.push(msg);
         });
         socket.on('whichPlayer', (playerInfo)=>{
-          state.playerInfo = playerInfo
-          console.log(state.playerInfo)
+          state.playerInfo = JSON.parse(JSON.stringify(playerInfo))
+          console.log(state.playerInfo.player1.id, state.playerName)
         })
       });
-
     });
     function sendMessage() {
       socket.emit("chat message", state.userInput, socket.id);
-      state.messages.message.push(socket.id + ": " + state.userInput);
+      state.messages.message.push(state.users[state.randomNum] + ": " + state.userInput);
       state.userInput = "";
     }
     function joinRoom() {

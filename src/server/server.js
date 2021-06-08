@@ -1,10 +1,9 @@
 const express = require('express');
 const app = express();
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
-
+const server = require('http').createServer(app)
+const io = require("socket.io")(server);
+const basicChatRoom = require ('./loadRooms')
+const startingGame = require('./startGame')
 const port = 3000
 const routes = require('./router')
 
@@ -25,43 +24,11 @@ db.once('open', () => {
   console.log('we connected to the db')
 })
 
-let players = {
-  player1:'',
-  player2:''
-}
-io.on('connection', async (socket) => {
-  socket.on('userConnected', (name) => {
-    if(!players.player1.length){
-      players.player1 = name
-    } else {
-      players.player2 = name
-    }
-    socket.broadcast.emit('displayWhoEnteredRoom', name + ' just connected')
-    io.emit('whichPlayer', players)
-    console.log(players)
-  })
-
-  socket.on('chat message', (msg, name) => {
-    // emits to everyone but the user that sent the message
-    socket.broadcast.emit('receiveMessage', name + ': ' + msg)
-  })
-
-  socket.on('leaveRoom', () => {
-    socket.leave('roomA')
-    io.emit('leftRoom', 'User has left the room')
-  })
-
-  socket.on('disconnect', () => {
-    for (const [key, value] of Object.entries(players)){
-      console.log(value, socket.id)
-      if (value === socket.id){
-        players[key] = ''
-      }
-      console.log(players)
-    }
-  })
+io.on('connection', (socket) => {
+  startingGame.startGame(io, socket)
+  basicChatRoom.userConnected(io, socket)
+  basicChatRoom.userChat(io, socket)
 })
-
 
 server.listen(port, () => {
   console.log('Tadah You Connected!')
