@@ -3,7 +3,13 @@
     <v-card-text
       style="height: 500px; border: solid black thin; overflow-y: scroll"
     >
-      <p v-for="(chat, ind) in state.roomText" :key="ind">
+      <p
+        :class="
+          state.userNames[state.myName] === state.myName ? 'text-right' : ''
+        "
+        v-for="(chat, ind) in state.roomText"
+        :key="ind"
+      >
         {{ chat }}
       </p>
     </v-card-text>
@@ -18,7 +24,7 @@
 </template>
 
 <script>
-import { reactive } from "@vue/composition-api";
+import { onMounted, reactive } from "@vue/composition-api";
 import { io } from "socket.io-client";
 export default {
   name: "room",
@@ -26,13 +32,23 @@ export default {
     const socket = io();
     const state = reactive({
       roomText: [],
-      userInput:''
+      userInput: "",
+      userNames: {},
+      myName: "",
     });
     function sendMessage() {
       socket.emit("chat message", state.userInput, socket.id);
-      state.roomText.push( state.userInput);
+      state.roomText.push(state.userInput);
       state.userInput = "";
     }
+    socket.on('whichUserSentMsg', (userName)=>{
+      state.myName = socket.id;
+      console.log(state.myName)
+      state.userNames[userName] = userName;
+    })
+    socket.on("displayMessage", (msg, userName) => {
+      state.roomText.push(userName + ": " + msg);
+    });
     return { state, sendMessage };
   },
 };

@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app)
 const io = require("socket.io")(server);
-const basicChatRoom = require ('./loadRooms')
+const chatRoom = require ('./chatRoom/loadChat')
 const startingGame = require('./startGame')
 const port = 3000
 const routes = require('./router')
@@ -26,8 +26,8 @@ db.once('open', () => {
 
 io.on('connection', (socket) => {
   startingGame.startGame(io, socket)
-  basicChatRoom.userConnected(io, socket)
-  basicChatRoom.userChat(io, socket)
+  // chatRoom.userConnected(io, socket)
+  chatRoom.emitMessage(io, socket)
 })
 
 server.listen(port, () => {
