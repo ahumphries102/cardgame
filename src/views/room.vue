@@ -5,7 +5,7 @@
     >
       <p
         :class="
-          state.userNames[state.myName] === state.myName ? 'text-right' : ''
+          state.roomText[ind].includes(state.myName) ? 'text-right' : ''
         "
         v-for="(chat, ind) in state.roomText"
         :key="ind"
@@ -24,7 +24,7 @@
 </template>
 
 <script>
-import { onMounted, reactive } from "@vue/composition-api";
+import { reactive } from "@vue/composition-api";
 import { io } from "socket.io-client";
 export default {
   name: "room",
@@ -37,15 +37,11 @@ export default {
       myName: "",
     });
     function sendMessage() {
+      !state.myName.length ? state.myName = socket.id : ''
       socket.emit("chat message", state.userInput, socket.id);
-      state.roomText.push(state.userInput);
+      state.roomText.push(socket.id + ': ' + state.userInput);
       state.userInput = "";
     }
-    socket.on('whichUserSentMsg', (userName)=>{
-      state.myName = socket.id;
-      console.log(state.myName)
-      state.userNames[userName] = userName;
-    })
     socket.on("displayMessage", (msg, userName) => {
       state.roomText.push(userName + ": " + msg);
     });
