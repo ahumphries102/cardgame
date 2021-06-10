@@ -21,8 +21,9 @@ const routes = [
     component: () => import('@/views/lobby')
   },
   {
-    path: '/room',
+    path: '/room/:id',
     name: 'room',
+    props: true,
     component: () => import('@/views/room')
   }
 ]

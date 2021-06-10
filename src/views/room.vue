@@ -1,11 +1,13 @@
 <template>
-  <v-card>
+  <v-card width="50%">
     <v-card-text
-      style="height: 500px; border: solid black thin; overflow-y: scroll"
+      style="height: 500px; overflow-y: scroll"
     >
+    <p>{{state.roomName}}</p>
+    <p>{{state.userName}}</p>
       <p
         :class="
-          state.roomText[ind].includes(state.myName) ? 'text-right' : ''
+          state.roomText[ind].includes(state.userName) ? 'text-right' : ''
         "
         v-for="(chat, ind) in state.roomText"
         :key="ind"
@@ -16,7 +18,7 @@
     <v-card-text>
       <v-text-field label="Enter message" v-model="state.userInput">
         <template #append>
-          <v-btn color="primary" @click="sendMessage">Start</v-btn>
+          <v-btn color="primary" @click="sendMessage" :disabled="!state.userInput.length">Send</v-btn>
         </template>
       </v-text-field>
     </v-card-text>
@@ -24,28 +26,36 @@
 </template>
 
 <script>
-import { reactive } from "@vue/composition-api";
+import { onMounted, reactive } from "@vue/composition-api";
 import { io } from "socket.io-client";
 export default {
   name: "room",
-  setup(props) {
-    const socket = io();
+  setup(props, context) {
+    const router = context.root.$router
+    const socket = io('localhost:3030');
+    const store = context.root.$store
     const state = reactive({
+      roomName: '',
       roomText: [],
-      userInput: "",
-      userNames: {},
-      myName: "",
+      userInput: '',
+      userName: ''
     });
+    onMounted(() => {
+      state.userName = store.userName
+      state.roomName = router.currentRoute.params.id
+      socket.emit("joinRoom", state.roomName);
+    })
     function sendMessage() {
-      !state.myName.length ? state.myName = socket.id : ''
-      socket.emit("chat message", state.userInput, socket.id);
-      state.roomText.push(socket.id + ': ' + state.userInput);
+      
+      console.log(store.userName, state.userName)
+      socket.emit("chat message", state.userInput, state.userName, state.roomName);
+      state.roomText.push(state.userName + ': ' + state.userInput);
       state.userInput = "";
     }
     socket.on("displayMessage", (msg, userName) => {
       state.roomText.push(userName + ": " + msg);
     });
-    return { state, sendMessage };
+  return { state, sendMessage };
   },
 };
 </script>

@@ -1,10 +1,20 @@
 const express = require('express');
 const app = express();
-const server = require('http').createServer(app)
-const io = require("socket.io")(server);
+
+const httpServer = require('http').createServer(app)
+const io = require("socket.io")(httpServer, {
+  cors: {
+      origin: "http://localhost:8080",
+      methods: ["GET", "POST"],
+      transports: ['websocket', 'polling'],
+      credentials: true
+  },
+  allowEIO3: true
+})
+
 const chatRoom = require ('./chatRoom/loadChat')
 const startingGame = require('./startGame')
-const port = 3000
+const port = 3030
 const routes = require('./router')
 
 app.use(express.json())
@@ -26,10 +36,9 @@ db.once('open', () => {
 
 io.on('connection', (socket) => {
   startingGame.startGame(io, socket)
-  // chatRoom.userConnected(io, socket)
   chatRoom.emitMessage(io, socket)
 })
 
-server.listen(port, () => {
+httpServer.listen(port, () => {
   console.log('Tadah You Connected!')
 })
