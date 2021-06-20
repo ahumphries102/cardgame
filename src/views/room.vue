@@ -1,24 +1,27 @@
 <template>
   <v-card width="50%">
-    <v-card-text
-      style="height: 500px; overflow-y: scroll"
-    >
-    <p>{{state.roomName}}</p>
-    <p>{{state.userName}}</p>
-      <p
-        :class="
-          state.roomText[ind].includes(state.userName) ? 'text-right' : ''
-        "
-        v-for="(chat, ind) in state.roomText"
-        :key="ind"
-      >
-        {{ chat }}
+    <v-overlay :z-index="0" :value="false">
+      <h2>Waiting for Oppenent to Join</h2>
+      <v-progress-linear indeterminate height="2" color="rgb(255,255,255)" />
+    </v-overlay>
+    <v-card-text style="height: 500px; overflow-y: scroll">
+      <p v-for="(chat, ind) in state.roomText" :key="ind">
+        {{chat.userName + " : " + chat.userMessage}}
       </p>
     </v-card-text>
     <v-card-text>
-      <v-text-field label="Enter message" v-model="state.userInput">
+      <v-text-field
+        @keyup.enter="sendMessage"
+        label="Enter message"
+        v-model="state.userInput"
+      >
         <template #append>
-          <v-btn color="primary" @click="sendMessage" :disabled="!state.userInput.length">Send</v-btn>
+          <v-btn
+            color="primary"
+            @click="sendMessage"
+            :disabled="!state.userInput.length"
+            >Send</v-btn
+          >
         </template>
       </v-text-field>
     </v-card-text>
@@ -30,32 +33,48 @@ import { onMounted, reactive } from "@vue/composition-api";
 import { io } from "socket.io-client";
 export default {
   name: "room",
-  setup(props, context) {
-    const router = context.root.$router
-    const socket = io('localhost:3030');
-    const store = context.root.$store
+  setup(_, context) {
+    const router = context.root.$router;
+    const socket = io();
+    const store = context.root.$store;
     const state = reactive({
+      chatInfo: {},
       roomName: '',
       roomText: [],
+      userInfo: {
+        userName: ''
+      },
       userInput: '',
-      userName: ''
+      users: {},
     });
     onMounted(() => {
-      state.userName = store.userName
-      state.roomName = router.currentRoute.params.id
-      socket.emit("joinRoom", state.roomName);
-    })
-    function sendMessage() {
-      
-      console.log(store.userName, state.userName)
-      socket.emit("chat message", state.userInput, state.userName, state.roomName);
-      state.roomText.push(state.userName + ': ' + state.userInput);
-      state.userInput = "";
-    }
-    socket.on("displayMessage", (msg, userName) => {
-      state.roomText.push(userName + ": " + msg);
+      state.userInfo.userName = store.userName;
+      state.chatInfo.userName = state.userInfo.userName
+      state.roomName = router.currentRoute.params.id;
+      socket.on("connect", () => {
+        state.userInfo.socketId = socket.id;
+        socket.emit("joinRoom", state.roomName, state.userInfo);
+        socket.on("userJoinedRoom", (msg, players) => {
+          state.roomText.push(msg);
+        });
+      });
     });
-  return { state, sendMessage };
+    function sendMessage() {
+      const uniqueUserMessage = JSON.parse(JSON.stringify(state.chatInfo))
+      uniqueUserMessage.userMessage = state.userInput
+      socket.emit(
+        "chat message",
+        uniqueUserMessage,
+        state.roomName
+      );
+      state.roomText.push(uniqueUserMessage);
+      state.userInput = "";
+      console.log(state.roomText)
+    }
+    socket.on("displayMessage", (userNameAndMsg) => {
+      state.roomText.push(userNameAndMsg);
+    });
+    return { state, sendMessage };
   },
 };
 </script>

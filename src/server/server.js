@@ -37,6 +37,9 @@ db.once('open', () => {
 io.on('connection', (socket) => {
   startingGame.startGame(io, socket)
   chatRoom.emitMessage(io, socket)
+  socket.on('disconnect', () => {
+    io.sockets.in('crab').emit(console.log('Gurpy left'));
+  })
 })
 
 httpServer.listen(port, () => {
