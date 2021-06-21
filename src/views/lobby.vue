@@ -38,7 +38,6 @@ export default {
     });
     function startGame() {
       state.startGame = true;
-      console.log(store)
       store.userName = state.userName
       router.push({ name: "room", params: {id: state.roomName} });
     }
