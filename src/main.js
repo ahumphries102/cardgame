@@ -8,8 +8,6 @@ Vue.use(CompositionApi)
 Vue.observable(Store)
 Vue.config.productionTip = false
 Vue.prototype.$store = Store
-
-console.log(Store)
 new Vue({
   router,
   vuetify,

@@ -1,6 +1,6 @@
 <template>
   <v-card width="50%">
-    <v-overlay :z-index="0" :value="Object.keys(state.players).length === 2">
+    <v-overlay :z-index="0" :value="Object.keys(state.players).length < 2">
       <h2>Waiting for Oppenent to Join</h2>
       <v-progress-linear indeterminate height="2" color="rgb(255,255,255)" />
     </v-overlay>
@@ -63,13 +63,12 @@ export default {
         socket.on("userJoinedRoom", (msg, players) => {
           state.roomText.push(msg);
           state.players = players
-          console.log(Object.keys(state.players))
+          console.log(Object.keys(state.players).length)
         });
       });
     });
     onUnmounted(() => {
-      console.log('we leave room')
-      socket.emit('leaveRoom', state.userInfo)
+      socket.emit('leaveRoom', state.userInfo, state.roomName)
     })
     function sendMessage() {
       /* When a user submits a message it should displayed uniquely. Without parsing

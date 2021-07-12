@@ -1,6 +1,6 @@
 const players = {}
 const spectators = {}
-
+setInterval(()=>console.log(players),5000)
 function createPlayers(room, userInfo) {
     const numberOfPlayers = Object.keys(players).length
     if (numberOfPlayers < 2) {
@@ -10,8 +10,9 @@ function createPlayers(room, userInfo) {
             player: numberOfPlayers + 1
         }
         return
-    } 
+    }
 
+    console.log('players', Object.keys(players).length)
     if (Object.keys(players).length >= 2) {
         // if there are more than 2 players make those users spectators.
         spectators[userInfo.id] = {
@@ -27,10 +28,9 @@ const startGame = (io, socket) => {
         socket.join(room)
         // 2. Check if there are at least 2 players and then establish player information
         createPlayers(room, userInfo)
-
-        console.log('specs', spectators)
-        console.log('players', players)
-        socket.to(room).emit('userJoinedRoom', {
+        // we need this to emit to everyone in the room so when player after player 1 joins they can see the total list of players.
+        // this is to ensure the room knows there's 2 players at all times.
+        io.to(room).emit('userJoinedRoom', {
             userName: userInfo.userName,
             userMessage: 'has joined the room'
         }, players)
@@ -39,11 +39,15 @@ const startGame = (io, socket) => {
 }
 
 const leaveGame = (io, socket) => {
-    socket.on('leaveRoom', (userInfo) => {
+    socket.on('leaveRoom', (userInfo, room) => {
+        socket.leave(room)
+        io.to(room).emit('userJoinedRoom', {
+            userName: userInfo.userName,
+            userMessage: 'has left the room'
+        }, players)
         if (Object.keys(players).length) {
             delete players[userInfo.id]
         }
-        console.log('player left', players)
     })
 }
 

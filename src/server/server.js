@@ -12,7 +12,7 @@ const io = require("socket.io")(httpServer, {
   allowEIO3: true
 })
 
-const chatRoom = require ('./chatRoom/loadChat')
+const loadChat = require ('./chatRoom/loadChat')
 const startingGame = require('./startGame')
 const port = 3030
 const routes = require('./router')
@@ -37,7 +37,7 @@ db.once('open', () => {
 io.on('connection', (socket) => {
   startingGame.startGame(io, socket)
   startingGame.leaveGame(io, socket)
-  chatRoom.emitMessage(io, socket)
+  loadChat.emitMessage(io, socket)
   socket.on('disconnect', () => {
     io.sockets.in('crab').emit(console.log('Gurpy left'));
   })
