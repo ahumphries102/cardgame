@@ -1,44 +1,24 @@
 <template>
-<div class="d-flex">
-  <Game/>
-  <v-card>
+  <div class="d-flex">
     <v-overlay :z-index="0" :value="Object.keys(state.players).length < 2">
       <h2>Waiting for Oppenent to Join</h2>
       <v-progress-linear indeterminate height="2" color="rgb(255,255,255)" />
     </v-overlay>
-    <v-card-text style="height: 500px; overflow-y: scroll">
-      <p v-for="(chat, ind) in state.roomText" :key="ind">
-        {{!chat.userMessage.includes('joined') ? chat.userName + " : " + chat.userMessage : chat.userName + " " + chat.userMessage}}
-      </p>
-    </v-card-text>
-    <v-card-text>
-      <v-text-field
-        @keyup.enter="sendMessage"
-        label="Enter message"
-        v-model="state.userInput"
-      >
-        <template #append>
-          <v-btn
-            color="primary"
-            @click="sendMessage"
-            :disabled="!state.userInput.length"
-            >Send</v-btn
-          >
-        </template>
-      </v-text-field>
-    </v-card-text>
-  </v-card>
-</div>
+    <Game />
+    <Chat />
+  </div>
 </template>
 
 <script>
-import Game from '@/views/game'
+import Game from "@/views/game";
+import Chat from "@/views/chat";
 import { onMounted, onUnmounted, reactive } from "@vue/composition-api";
 import { io } from "socket.io-client";
 export default {
   name: "room",
   components: {
-    Game
+    Chat,
+    Game,
   },
   setup(_, context) {
     const router = context.root.$router;
@@ -54,6 +34,10 @@ export default {
       },
       userInput: '',
     });
+    
+    onUnmounted(() => {
+      socket.emit('leaveRoom', state.userInfo, state.roomName)
+    })
     onMounted(() => {
       // when a user enters a room they'll have a name. We need to capture it.
       state.userInfo.userName = store.userName;
@@ -80,26 +64,7 @@ export default {
         });
       });
     });
-    onUnmounted(() => {
-      socket.emit('leaveRoom', state.userInfo, state.roomName)
-    })
-    function sendMessage() {
-      /* When a user submits a message it should displayed uniquely. Without parsing
-      when a new message is displayed all of the users messages will change. */
-      const uniqueUserMessage = JSON.parse(JSON.stringify(state.chatInfo))
-      uniqueUserMessage.userMessage = state.userInput
-      socket.emit(
-        "chat message",
-        uniqueUserMessage,
-        state.roomName
-      );
-      state.roomText.push(uniqueUserMessage);
-      state.userInput = '';
-    }
-    socket.on("displayMessage", (userNameAndMsg) => {
-      state.roomText.push(userNameAndMsg);
-    });
-    return { state, sendMessage };
+    return { state };
   },
 };
 </script>
