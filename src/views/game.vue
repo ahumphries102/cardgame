@@ -1,45 +1,10 @@
 <template>
-<div class="d-flex">
-  <Game/>
-  <v-card>
-    <v-overlay :z-index="0" :value="Object.keys(state.players).length < 2">
-      <h2>Waiting for Oppenent to Join</h2>
-      <v-progress-linear indeterminate height="2" color="rgb(255,255,255)" />
-    </v-overlay>
-    <v-card-text style="height: 500px; overflow-y: scroll">
-      <p v-for="(chat, ind) in state.roomText" :key="ind">
-        {{!chat.userMessage.includes('joined') ? chat.userName + " : " + chat.userMessage : chat.userName + " " + chat.userMessage}}
-      </p>
-    </v-card-text>
-    <v-card-text>
-      <v-text-field
-        @keyup.enter="sendMessage"
-        label="Enter message"
-        v-model="state.userInput"
-      >
-        <template #append>
-          <v-btn
-            color="primary"
-            @click="sendMessage"
-            :disabled="!state.userInput.length"
-            >Send</v-btn
-          >
-        </template>
-      </v-text-field>
-    </v-card-text>
-  </v-card>
-</div>
+  <v-card width="90%"> taco </v-card>
 </template>
 
 <script>
-import Game from '@/views/game'
-import { onMounted, onUnmounted, reactive } from "@vue/composition-api";
-import { io } from "socket.io-client";
 export default {
-  name: "room",
-  components: {
-    Game
-  },
+  name: "game",
   setup(_, context) {
     const router = context.root.$router;
     const socket = io();
@@ -100,9 +65,6 @@ export default {
       state.roomText.push(userNameAndMsg);
     });
     return { state, sendMessage };
-  },
-};
+  }
+}
 </script>
-
-<style>
-</style>

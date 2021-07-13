@@ -38,9 +38,6 @@ io.on('connection', (socket) => {
   startingGame.startGame(io, socket)
   startingGame.leaveGame(io, socket)
   loadChat.emitMessage(io, socket)
-  socket.on('disconnect', () => {
-    io.sockets.in('crab').emit(console.log('Gurpy left'));
-  })
 })
 
 httpServer.listen(port, () => {

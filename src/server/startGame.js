@@ -28,12 +28,15 @@ const startGame = (io, socket) => {
         socket.join(room)
         // 2. Check if there are at least 2 players and then establish player information
         createPlayers(room, userInfo)
-        // we need this to emit to everyone in the room so when player after player 1 joins they can see the total list of players.
-        // this is to ensure the room knows there's 2 players at all times.
-        io.to(room).emit('userJoinedRoom', {
+
+        // Send the information to the room of who joined and what should be displayed
+        socket.to(room).emit('displayWhoJoined', {
             userName: userInfo.userName,
             userMessage: 'has joined the room'
         }, players)
+        /* we need this to emit to everyone in the room so when player after player 1 joins they can see the total list of players.
+            this is to ensure the room knows there's 2 players at all times. */
+        io.to(room).emit('userJoinedRoom', players)
         io.to(room)
     })
 }
